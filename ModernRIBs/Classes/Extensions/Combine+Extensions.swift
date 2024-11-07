@@ -17,7 +17,7 @@
 import Combine
 
 /// A `CompositeCancellable` represents a group of cancellable resources that are cancelled together.
-final class CompositeCancellable: Cancellable {
+public final class CompositeCancellable: Cancellable {
     // MARK: - Internal
 
     /// The number of elements in a composite cancellable set
@@ -37,14 +37,26 @@ final class CompositeCancellable: Cancellable {
     }
 
     /// Cancel all cancellables in a composite cancellable set
-    func cancel() {
+    public func cancel() {
         guard !isCancelled else { return }
         isCancelled = true
         cancellables.forEach { $0.cancel() }
     }
 
+    public init() {}
+
     // MARK: - Private
 
     private var isCancelled: Bool = false
     private var cancellables: Set<AnyCancellable> = .init()
+}
+
+public protocol CancellableObject {
+    var cancellable: CompositeCancellable { get }
+}
+
+public extension AnyCancellable {
+    func cancelWithCancellableController(_ viewController: CancellableObject) {
+        viewController.cancellable.insert(self)
+    }
 }
